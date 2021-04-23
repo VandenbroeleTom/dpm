@@ -1,6 +1,6 @@
-// FIXME: Count the amount of API calls.
-import localforage from "localforage";
+import Storage from "./Storage";
 
+// FIXME: Count the amount of API calls.
 export default class StravaClient {
 
   static async getActivities(start: Date | null = null, end: Date | null = null) {
@@ -14,7 +14,7 @@ export default class StravaClient {
 
     return await fetch(url.toString(), {
       headers: {
-        Authorization: "Bearer " + (await localforage.getItem("access_token"))
+        Authorization: "Bearer " + (await Storage.getItem("access_token"))
       }
     }).then(res => {
       if (!res.ok) {
@@ -29,7 +29,7 @@ export default class StravaClient {
     const url = new URL(`https://www.strava.com/api/v3/activities/${id}`);
     return await fetch(url.toString(), {
       headers: {
-        Authorization: "Bearer " + (await localforage.getItem("access_token"))
+        Authorization: "Bearer " + (await Storage.getItem("access_token"))
       }
     }).then(res => res.json());
   }
@@ -45,7 +45,7 @@ export default class StravaClient {
     return await fetch(url.toString(), {
       headers: {
         // FIXME: Wrap the token in a 'user' object.
-        Authorization: "Bearer " + (await localforage.getItem("access_token"))
+        Authorization: "Bearer " + (await Storage.getItem("access_token"))
       }
     }).then(async res => {
       if (!res.ok) {

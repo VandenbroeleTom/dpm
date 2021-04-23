@@ -1,13 +1,13 @@
 <template>
   <div class="login-button">
-    <a :href="loginLink">Login with strava</a>
+    <button :href="loginLink">Login with strava</button>
   </div>
 </template>
 
 <script>
 import { defineComponent } from "vue";
-import localforage from "localforage";
 import ApiClient from "@/services/ApiClient";
+import Storage from "../services/Storage";
 
 const CLIENT_ID = "50808";
 
@@ -38,8 +38,8 @@ export default defineComponent({
       );
 
       if (access_token) {
-        await localforage.setItem("access_token", access_token);
-        await localforage.setItem("refresh_token", refresh_token);
+        await Storage.setItem("access_token", access_token);
+        await Storage.setItem("refresh_token", refresh_token);
         this.$router.push("/activities");
       }
     }

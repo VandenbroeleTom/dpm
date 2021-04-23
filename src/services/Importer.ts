@@ -1,6 +1,6 @@
 import StravaClient from "@/services/StravaClient";
 import Calculator from "@/services/Calculator";
-import localforage from "localforage";
+import Storage from "./Storage";
 
 export default class Importer {
   static async importStreams(ids: number[]) {
@@ -12,7 +12,7 @@ export default class Importer {
 
   static async importStream(id: number) {
     let activity: { id?: number } =
-      (await localforage.getItem("activity." + id.toString())) || {};
+      (await Storage.getItem("activity." + id.toString())) || {};
 
     if (!activity.id) {
       activity = await StravaClient.getActivity(id);
@@ -27,7 +27,7 @@ export default class Importer {
       ...stream
     };
 
-    await localforage.setItem("activity." + id.toString(), activity);
+    await Storage.setItem("activity." + id.toString(), activity);
 
     return activity;
   }

@@ -28,11 +28,11 @@ import {
 } from "echarts/components";
 import VChart from "vue-echarts";
 import { defineComponent } from "vue";
-import * as localforage from "localforage";
 import { Days } from "@/types/Days";
 import TSBCalculator from "@/services/TSBCalculator";
 import { Day } from "@/types/Day";
 import { Activity } from "@/types/Activity";
+import Storage from '@/services/Storage';
 
 use([
   CanvasRenderer,
@@ -50,7 +50,7 @@ export default defineComponent({
   data() {
     return {
       start: "2021-01-01",
-      end: "2021-04-01",
+      end: (new Date()).toISOString().split('T')[0],
       days: [],
       option: {}
     };
@@ -61,9 +61,9 @@ export default defineComponent({
       const days = this.getDays();
 
       // Add activities to days.
-      const activities = await localforage.getItem("activities");
+      const activities = await Storage.getItem("activities");
       for (const id in activities) {
-        const activity = await localforage.getItem("activity." + id);
+        const activity = await Storage.getItem("activity." + id);
 
         if (!activity) {
           // Not yet loaded.
@@ -71,7 +71,6 @@ export default defineComponent({
           continue;
         }
 
-        console.log(activity);
         const activityDate = new Date(activity.start_date)
           .toISOString()
           .split("T")[0];
@@ -103,7 +102,7 @@ export default defineComponent({
         yesterday = days[date];
       }
 
-      await localforage.setItem("days", days);
+      await Storage.setItem("days", days);
       this.days = days;
       this.setOptions(days);
     },
@@ -186,7 +185,7 @@ export default defineComponent({
     }
   },
   async created() {
-    const days = (await localforage.getItem("days")) || {};
+    const days = (await Storage.getItem("days")) || {};
     this.setOptions(days);
   }
 });

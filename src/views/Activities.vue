@@ -35,9 +35,9 @@
 </template>
 <script lang="ts">
 import { defineComponent } from "vue";
-import localforage from "localforage";
 import StravaClient from "@/services/StravaClient";
 import Importer from "@/services/Importer";
+import Storage from "@/services/Storage";
 
 export default defineComponent({
   name: "Activities",
@@ -76,7 +76,7 @@ export default defineComponent({
       await this.save();
     },
     async save() {
-      await localforage.setItem(
+      await Storage.setItem(
         "activities",
         JSON.parse(JSON.stringify(this.activities))
       );
@@ -90,7 +90,7 @@ export default defineComponent({
   async created() {
     // Load the activities.
     let activities: { [key: number]: {} } =
-      (await localforage.getItem("activities")) || {};
+      (await Storage.getItem("activities")) || {};
 
     // Sort the activities.
     activities = Object.keys(activities)
