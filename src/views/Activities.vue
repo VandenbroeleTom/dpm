@@ -21,12 +21,14 @@
         <input
           type="checkbox"
           name="stream"
-          id="stream"
+          :id="'stream-' + activity.id"
           :value="activity.id"
           v-model="streams"
         />
-        {{ activity.start_date }}: {{ activity.name }}
-        <router-link :to="'/activities/' + activity.id">View</router-link>
+        <label :for="'stream-' + activity.id">
+          {{ activity.start_date }}: {{ activity.name }}
+          <router-link :to="'/activities/' + activity.id">View</router-link>
+        </label>
       </div>
     </form>
   </div>

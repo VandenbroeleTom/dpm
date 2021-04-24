@@ -16,14 +16,13 @@
     </div>
   </div>
 </template>
-<script lang="ts">
+<script>
 import StravaClient from "../services/StravaClient";
 import Storage from "@/services/Storage";
 import Calculator from "../services/Calculator";
 import VChart from "vue-echarts";
 import "echarts";
-import { defineComponent } from "vue";
-import { Activity } from "@/types/Activity";
+import {defineComponent} from "vue";
 import Importer from "@/services/Importer";
 
 export default defineComponent({
@@ -33,7 +32,7 @@ export default defineComponent({
   },
   data() {
     return {
-      activity: {} as any,
+      activity: {},
       option: {},
     };
   },
@@ -47,9 +46,8 @@ export default defineComponent({
       // await localforage.setItem("activity." + id, activity);
       // this.activity = activity;
     },
-    async getStream(id: number) {
-      const activity = await Importer.importStream(id);
-      this.activity = activity;
+    async getStream(id) {
+      this.activity = await Importer.importStream(id);
     },
     showChart() {
       this.option = {
@@ -74,19 +72,19 @@ export default defineComponent({
     },
   },
   async created() {
-    let id = this.$route.params.id;
+    const id = this.$route.params.id;
     let activity = await Storage.getItem("activity." + id);
-
-    if (Array.isArray(id)) {
-      id = id[0];
-    }
 
     if (!activity) {
       // Get it from strava.
-      activity = await StravaClient.getActivity(parseInt(id));
+      activity = await StravaClient.getActivity(id);
       await Storage.setItem("activity." + id, activity);
     }
-    this.activity = activity as Activity;
+    this.activity = activity;
+
+    if (this.activity.time) {
+      this.showChart()
+    }
   },
 });
 </script>
