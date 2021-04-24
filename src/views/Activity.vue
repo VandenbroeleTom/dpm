@@ -7,7 +7,6 @@
       <dt>Start date</dt>
       <dd>{{ activity.start_date }}</dd>
     </dl>
-    <button @click="reload">Reload</button>
     <button @click="getStream(activity.id)">Get stream</button>
     <button v-if="activity.time" @click="showChart">Show chart</button>
 
@@ -19,7 +18,7 @@
 <script>
 import StravaClient from "../services/StravaClient";
 import Storage from "@/services/Storage";
-import Calculator from "../services/Calculator";
+import Calculator from "../services/tss-calculator";
 import VChart from "vue-echarts";
 import "echarts";
 import {defineComponent} from "vue";
@@ -37,15 +36,6 @@ export default defineComponent({
     };
   },
   methods: {
-    async calculateTSS() {
-      this.activity.tss = await Calculator.getTss(this.activity);
-    },
-    async reload() {
-      // const id = this.$route.params.id;
-      // const activity = await StravaClient.getActivity(id);
-      // await localforage.setItem("activity." + id, activity);
-      // this.activity = activity;
-    },
     async getStream(id) {
       this.activity = await Importer.importStream(id);
     },

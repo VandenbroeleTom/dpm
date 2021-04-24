@@ -29,7 +29,7 @@ import {
 import VChart from "vue-echarts";
 import { defineComponent } from "vue";
 import { Days } from "@/types/Days";
-import TSBCalculator from "@/services/TSBCalculator";
+import {tsb} from "@/services/TSBCalculator";
 import { Day } from "@/types/Day";
 import { Activity } from "@/types/Activity";
 import Storage from '@/services/Storage';
@@ -95,7 +95,7 @@ export default defineComponent({
 
         days[date] = {
           ...today,
-          ...TSBCalculator.getValue(yesterday, today)
+          ...tsb(yesterday, today)
         };
 
         // Next day.

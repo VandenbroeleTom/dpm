@@ -1,6 +1,14 @@
 import StravaClient from "@/services/StravaClient";
-import Calculator from "@/services/Calculator";
 import Storage from "./Storage";
+import {tss} from "@/services/tss-calculator";
+import {TRIMP_FACTOR, User} from "@/types/User";
+
+const user: User = {
+  restHr: 43,
+  thresHr: 193,
+  maxHr: 208,
+  trimpFactor: TRIMP_FACTOR.M,
+}
 
 export default class Importer {
   static async importStreams(ids: number[]) {
@@ -24,7 +32,7 @@ export default class Importer {
 
     const stream = await StravaClient.getActivityStream(id);
 
-    stream.tss = Calculator.getTss(stream);
+    stream.tss = tss(stream, user);
 
     activity = {
       ...activity,

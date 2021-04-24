@@ -25,7 +25,7 @@ const routes: Array<RouteRecordRaw> = [
     component: Chart,
   },
   {
-    path: "config",
+    path: "/config",
     component: Config
   }
 ];
