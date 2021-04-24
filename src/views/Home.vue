@@ -10,6 +10,7 @@ import { defineComponent } from "vue";
 import LoginButton from "@/components/LoginButton.vue";
 import Storage from "@/services/Storage";
 import ApiClient from "@/services/ApiClient";
+import notifier from "@/services/notifier";
 
 export default defineComponent({
   name: "Home",
@@ -24,5 +25,8 @@ export default defineComponent({
       await Storage.setItem('access_token', tokens.access_token)
     },
   },
+  async created() {
+    console.log(notifier.permission);
+  }
 });
 </script>

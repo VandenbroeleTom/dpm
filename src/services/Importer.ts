@@ -4,10 +4,14 @@ import Storage from "./Storage";
 
 export default class Importer {
   static async importStreams(ids: number[]) {
+    const streams = [];
+
     for (const id of ids) {
       // FIXME: Set a soft limit on this.
-      await this.importStream(id);
+      streams.push(await this.importStream(id));
     }
+
+    return streams;
   }
 
   static async importStream(id: number) {

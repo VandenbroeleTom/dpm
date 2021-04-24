@@ -65,7 +65,7 @@ export default defineComponent({
           {
             name: "HR",
             type: "line",
-            data: this.activity.heartrate.data,
+            data: (this.activity.heartrate || {}).data || [],
           },
         ],
       };

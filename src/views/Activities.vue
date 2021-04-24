@@ -3,45 +3,49 @@
     <form action="#" @submit.prevent="fetchActivities">
       <div>
         <label for="start">Start</label>
-        <input type="date" name="start" id="start" v-model="start" />
+        <input type="date" name="start" id="start" v-model="start"/>
       </div>
       <div>
         <label for="end">End</label>
-        <input type="date" name="end" id="end" v-model="end" />
+        <input type="date" name="end" id="end" v-model="end"/>
       </div>
       <div>
-        <input type="submit" value="Fetch activities" />
+        <input type="submit" value="Fetch activities"/>
       </div>
     </form>
-    <form action="#" @submit.prevent="getStreams">
-      <div>
-        <input type="submit" value="Get streams" />
-      </div>
-      <div class="activity" v-for="activity in activities" :key="activity.id">
-        <input
-          type="checkbox"
-          name="stream"
-          :id="'stream-' + activity.id"
-          :value="activity.id"
-          v-model="streams"
-        />
-        <label :for="'stream-' + activity.id">
-          {{ activity.start_date }}: {{ activity.name }}
-          <router-link :to="'/activities/' + activity.id">View</router-link>
-        </label>
-      </div>
-    </form>
+    <table class="activities">
+      <thead>
+      <tr>
+        <th>Date</th>
+        <th>Name</th>
+        <th>TSS</th>
+      </tr>
+      </thead>
+      <tbody>
+      <tr v-for="activity, id in activities" :key="id">
+        <td>{{ new Date(activity.start_date).toISOString().split('T')[0] }}</td>
+        <td>
+          <router-link :to="'/activities/' + activity.id">{{ activity.name }}</router-link>
+        </td>
+        <td v-if="activity.tss">
+          {{ Math.round(activity.tss * 100) / 100 }}
+        </td>
+        <td v-else>
+          <a @click.prevent="getStreams([id])" href="#">Calculate</a>
+        </td>
+      </tr>
+      </tbody>
+    </table>
   </div>
 
-  <router-view />
+  <router-view/>
 </template>
-<script lang="ts">
-import { defineComponent } from "vue";
+<script>
 import StravaClient from "@/services/StravaClient";
 import Importer from "@/services/Importer";
 import Storage from "@/services/Storage";
 
-export default defineComponent({
+export default {
   name: "Activities",
   data() {
     return {
@@ -58,52 +62,64 @@ export default defineComponent({
       // Add a day because by default its 00:00.
       end.setTime(end.getTime() + 1000 * 60 * 60 * 24);
 
-      const activities: { id: number }[] = await StravaClient.getActivities(
-        start,
-        end
-      );
-      const activitiesById: { [key: number]: {} } = activities.reduce(
-        (prev, curr) => {
-          prev[curr.id] = curr;
-          return prev;
-        },
-        {} as { [key: number]: {} }
+      const activities = await StravaClient.getActivities(start, end);
+      const activitiesById = activities.reduce(
+          (prev, curr) => {
+            prev[curr.id] = curr;
+            return prev;
+          },
+          {}
       );
 
       this.activities = {
-        ...this.activities,
         ...activitiesById,
+        ...this.activities,
       };
 
       await this.save();
     },
     async save() {
       await Storage.setItem(
-        "activities",
-        JSON.parse(JSON.stringify(this.activities))
+          "activities",
+          JSON.parse(JSON.stringify(this.activities))
       );
     },
-    async getStreams() {
-      const ids = Object.values(this.streams);
-      await Importer.importStreams(ids);
+    async getStreams(streams) {
+      const ids = Object.values(streams);
+      const activities = await Importer.importStreams(ids);
+      for (const activity of activities) {
+        this.activities[activity.id] = activity;
+      }
       this.streams = [];
     },
   },
   async created() {
     // Load the activities.
-    let activities: { [key: number]: {} } =
-      (await Storage.getItem("activities")) || {};
+    let activities = (await Storage.getItem("activities")) || {};
 
     // Sort the activities.
     activities = Object.keys(activities)
-      .sort()
-      .reverse()
-      .reduce((carry, value) => {
-        carry[parseInt(value)] = activities[parseInt(value)];
-        return carry;
-      }, {} as { [key: number]: {} });
+        .sort()
+        .reverse()
+        .reduce((carry, value) => {
+          carry[parseInt(value)] = activities[parseInt(value)];
+          return carry;
+        }, {});
 
     this.activities = activities;
+
+    for (const id of Object.keys(activities)) {
+      const activity = await Storage.getItem('activity.' + id);
+      if (activity && activity.tss) {
+        this.activities[id].tss = activity.tss;
+      }
+    }
   },
-});
+}
 </script>
+
+<style>
+table.activities tbody tr:hover {
+  background-color: var(--background);
+}
+</style>

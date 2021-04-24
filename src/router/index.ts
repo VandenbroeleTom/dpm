@@ -3,6 +3,7 @@ import Home from "../views/Home.vue";
 import Activities from "../views/Activities.vue";
 import Activity from "../views/Activity.vue";
 import Chart from "../views/Chart.vue";
+import Config from "@/views/Config.vue";
 
 const routes: Array<RouteRecordRaw> = [
   {
@@ -23,6 +24,10 @@ const routes: Array<RouteRecordRaw> = [
     path: "/chart",
     component: Chart,
   },
+  {
+    path: "config",
+    component: Config
+  }
 ];
 
 const router = createRouter({
