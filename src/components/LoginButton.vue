@@ -1,6 +1,6 @@
 <template>
-  <div class="login-button">
-    <button :href="loginLink">Login with strava</button>
+  <div v-if="show" class="login-button">
+    <button @click="login">Login with strava</button>
   </div>
 </template>
 
@@ -13,6 +13,11 @@ const CLIENT_ID = "50808";
 
 export default defineComponent({
   name: "LoginButton",
+  data() {
+    return {
+      show: true
+    }
+  },
   computed: {
     loginLink() {
       const url = new URL("https://www.strava.com/oauth/authorize");
@@ -23,9 +28,16 @@ export default defineComponent({
       return url.toString();
     },
   },
+  methods: {
+    login() {
+      window.location.href = this.loginLink
+    }
+  },
   async created() {
-    // Check if we have a access token and it has not yet expired.
-    // ..
+    if (await Storage.getItem('refresh_token')) {
+      // Don't show login button
+      this.show = false;
+    }
 
     // The auth code.
     const code = this.$route.query.code;
@@ -40,7 +52,7 @@ export default defineComponent({
       if (access_token) {
         await Storage.setItem("access_token", access_token);
         await Storage.setItem("refresh_token", refresh_token);
-        this.$router.push("/activities");
+        await this.$router.push("/activities");
       }
     }
   },
