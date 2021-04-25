@@ -1,6 +1,6 @@
 import StravaClient from "@/services/StravaClient";
 import Storage from "./Storage";
-import {tss} from "@/services/tss-calculator";
+import {tss} from "@/services/calculators/tss-calculator";
 import {TRIMP_FACTOR, User} from "@/types/User";
 
 const user: User = {

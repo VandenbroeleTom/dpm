@@ -2,16 +2,18 @@
   <div class="chart">
     <form action="#" @submit.prevent="calculate">
       <div>
-        <label for="start">Start</label>
-        <input v-model="start" type="date" name="start" id="start" />
+        <input type="radio" v-model="chart" name="chart" id="tsb" value="tsb">
+        <label for="tsb">TSB</label>
       </div>
       <div>
-        <label for="end">End</label>
-        <input v-model="end" type="date" name="end" id="end" />
+        <input type="radio" v-model="chart" name="chart" id="bannister" value="bannister">
+        <label for="bannister">Bannister</label>
       </div>
       <div>
-        <input type="submit" value="Calculate" />
+        <input type="radio" disabled="disabled" v-model="chart" name="chart" id="busso" value="busso">
+        <label for="busso">Busso</label>
       </div>
+      <input type="submit" value="Calculate" />
     </form>
     <v-chart :option="option"></v-chart>
   </div>
@@ -28,11 +30,9 @@ import {
 } from "echarts/components";
 import VChart from "vue-echarts";
 import { defineComponent } from "vue";
-import { Days } from "@/types/Days";
-import {tsb} from "@/services/TSBCalculator";
-import { Day } from "@/types/Day";
-import { Activity } from "@/types/Activity";
+import {tsb, values} from "@/services/calculators/tsb-calculator";
 import Storage from '@/services/Storage';
+import {bannister} from "@/services/calculators/bannister-calculator";
 
 use([
   CanvasRenderer,
@@ -49,78 +49,27 @@ export default defineComponent({
   },
   data() {
     return {
-      start: "2021-01-01",
-      end: (new Date()).toISOString().split('T')[0],
+      chart: "tsb",
       days: [],
       option: {}
     };
   },
   methods: {
     async calculate() {
-      // Get all days.
-      const days = this.getDays();
+      const ids = Object.keys(await Storage.getItem("activities"));
+      const activities = [];
 
-      // Add activities to days.
-      const activities = await Storage.getItem("activities");
-      for (const id in activities) {
+      for (const id of ids) {
         const activity = await Storage.getItem("activity." + id);
-
-        if (!activity) {
-          // Not yet loaded.
-          // FIXME: Set an error message.
-          continue;
+        if (activity) {
+          activities.push(activity);
         }
-
-        const activityDate = new Date(activity.start_date)
-          .toISOString()
-          .split("T")[0];
-
-        if (!days[activityDate]) {
-          continue;
-        }
-
-        if (!days[activityDate].tss) {
-          days[activityDate].tss = 0;
-        }
-
-        days[activityDate].tss += activity.tss;
       }
 
-      // Calculate form / fitness.
-      let yesterday = {
-        tss: 0
-      };
-      for (const date in days) {
-        const today = days[date];
+      await Storage.setItem("tsb", tsb(activities));
+      await Storage.setItem("bannister", bannister(activities));
 
-        days[date] = {
-          ...today,
-          ...tsb(yesterday, today)
-        };
-
-        // Next day.
-        yesterday = days[date];
-      }
-
-      await Storage.setItem("days", days);
-      this.days = days;
-      this.setOptions(days);
-    },
-    getDays() {
-      const date = new Date(this.start);
-      const days = {};
-      const end = new Date(this.end);
-
-      while (date.getTime() <= end.getTime()) {
-        days[date.toISOString().split("T")[0]] = {
-          date: date.toISOString().split("T")[0]
-        };
-
-        // Next day.
-        date.setTime(date.getTime() + 1000 * 60 * 60 * 24);
-      }
-
-      return days;
+      this.setOptions(await Storage.getItem(this.chart));
     },
     setOptions(days) {
       this.option = {
@@ -184,8 +133,15 @@ export default defineComponent({
       };
     }
   },
+  watch: {
+    chart: async function (chart) {
+      const days = (await Storage.getItem(chart)) || {};
+      this.setOptions(days);
+    }
+  },
   async created() {
-    const days = (await Storage.getItem("days")) || {};
+    this.chart = (await Storage.getItem("config") || { chart: "tsb"}).chart;
+    const days = (await Storage.getItem(this.chart)) || {};
     this.setOptions(days);
   }
 });

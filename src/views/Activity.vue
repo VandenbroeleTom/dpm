@@ -18,7 +18,7 @@
 <script>
 import StravaClient from "../services/StravaClient";
 import Storage from "@/services/Storage";
-import Calculator from "../services/tss-calculator";
+import Calculator from "../services/calculators/tss-calculator";
 import VChart from "vue-echarts";
 import "echarts";
 import {defineComponent} from "vue";

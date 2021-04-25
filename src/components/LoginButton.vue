@@ -45,7 +45,7 @@ export default defineComponent({
     const scope = this.$route.query.scope;
     if (code) {
       // Get the access code.
-      const { access_token, refresh_token } = await ApiClient.getAccessTokens(
+      const { access_token, refresh_token } = await ApiClient.accessTokens(
         code
       );
 
