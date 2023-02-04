@@ -15,8 +15,8 @@ export default defineComponent({
   name: "LoginButton",
   data() {
     return {
-      show: true
-    }
+      show: true,
+    };
   },
   computed: {
     loginLink() {
@@ -30,30 +30,24 @@ export default defineComponent({
   },
   methods: {
     login() {
-      window.location.href = this.loginLink
-    }
+      window.location.href = this.loginLink;
+    },
   },
   async created() {
-    if (await Storage.getItem('refresh_token')) {
+    if (await Storage.getItem("refresh_token")) {
       // Don't show login button
-      this.show = false;
+      // this.show = false;
     }
 
     // The auth code.
     const code = this.$route.query.code;
     // The received scope.
     const scope = this.$route.query.scope;
-    if (code) {
-      // Get the access code.
-      const { access_token, refresh_token } = await ApiClient.accessTokens(
-        code
-      );
 
-      if (access_token) {
-        await Storage.setItem("access_token", access_token);
-        await Storage.setItem("refresh_token", refresh_token);
-        await this.$router.push("/activities");
-      }
+    if (code) {
+      const response = await ApiClient.accessTokens(code);
+      await Storage.setItem("user", response);
+      await this.$router.push("/activities");
     }
   },
 });

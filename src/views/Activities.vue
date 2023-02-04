@@ -11,11 +11,13 @@
       </div>
       <div>
         <input type="submit" value="Fetch activities"/>
+        <input type="submit" value="Caclculate selected activites" @click="getStreams">
       </div>
     </form>
     <table class="activities">
       <thead>
       <tr>
+        <th><input type="checkbox" name="activities" id="select-all" @change="toggleAll"></th>
         <th>Date</th>
         <th>Name</th>
         <th>TSS</th>
@@ -23,7 +25,12 @@
       </thead>
       <tbody>
       <tr v-for="activity, id in activities" :key="id">
-        <td>{{ new Date(activity.start_date).toISOString().split('T')[0] }}</td>
+        <td><input type="checkbox" v-model="activity.checked" name="activities[]" id=""></td>
+        <td>
+          <a target="_blank" :href="'https://strava.com/activities/' + id">
+            {{ new Date(activity.start_date).toISOString().split('T')[0] }}
+          </a>
+        </td>
         <td>
           <router-link :to="'/activities/' + activity.id">{{ activity.name }}</router-link>
         </td>
@@ -31,7 +38,7 @@
           {{ Math.round(activity.tss * 100) / 100 }}
         </td>
         <td v-else>
-          <a @click.prevent="getStreams([id])" href="#">Calculate</a>
+          <a @click.prevent="getStreams" href="#">Calculate</a>
         </td>
       </tr>
       </tbody>
@@ -53,9 +60,16 @@ export default {
       end: new Date().toISOString().split("T")[0],
       activities: {},
       streams: [],
+      selectAll: false,
     };
   },
   methods: {
+    async toggleAll() {
+      this.selectAll = !this.selectAll;
+      for (let id of Object.keys(this.activities)) {
+        this.activities[id].checked = this.selectAll;
+      }
+    },
     async fetchActivities() {
       const start = new Date(this.start);
       const end = new Date(this.end);
@@ -84,8 +98,8 @@ export default {
           JSON.parse(JSON.stringify(this.activities))
       );
     },
-    async getStreams(streams) {
-      const ids = Object.values(streams);
+    async getStreams() {
+      const ids = Object.values(this.activities).filter(activity => activity.checked && !activity.tss).map(activity => activity.id);
       const activities = await Importer.importStreams(ids);
       for (const activity of activities) {
         this.activities[activity.id] = activity;

@@ -1,4 +1,6 @@
-const API_URL = process.env.NODE_ENV === 'production' ? 'https://dynamic-performance-modelling.herokuapp.com' : 'http://localhost:1235'
+const API_URL = process.env.NODE_ENV === 'production' ? 
+  'https://dynamic-performance-modelling.herokuapp.com' :
+  'http://localhost:1234'
 
 export default class ApiClient {
 
